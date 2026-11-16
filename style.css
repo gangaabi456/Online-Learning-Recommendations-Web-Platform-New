@@ -1,0 +1,622 @@
+/* FILE: style.css */
+
+/* --- 1. RESET & VARIABLES --- */
+:root {
+    /* Backgrounds */
+    --bg-main: #0b0e14;
+    --bg-sidebar: #13161c;
+    --card-bg: rgba(23, 27, 36, 0.7);
+    
+    /* Neon Accents */
+    --purple: #d946ef;
+    --purple-glow: rgba(217, 70, 239, 0.4);
+    
+    --green: #22c55e;
+    --green-glow: rgba(34, 197, 94, 0.4);
+    
+    --blue: #0ea5e9;
+    --blue-glow: rgba(14, 165, 233, 0.4);
+    
+    --orange: #f97316;
+    --orange-glow: rgba(249, 115, 22, 0.4);
+    
+    /* Text */
+    --text-white: #ffffff;
+    --text-muted: #94a3b8;
+    
+    /* Layout */
+    --sidebar-width: 260px;
+    --radius: 24px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Outfit', sans-serif;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-white);
+    display: flex;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* --- 2. SIDEBAR --- */
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--bg-sidebar);
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid rgba(255,255,255,0.05);
+    z-index: 100;
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 3rem;
+}
+
+.logo-area i {
+    font-size: 2.5rem;
+    color: var(--purple);
+    text-shadow: 0 0 15px var(--purple);
+}
+
+.logo-text {
+    font-weight: 600;
+    font-size: 1.1rem;
+    line-height: 1.2;
+}
+
+.nav-links {
+    list-style: none;
+    flex: 1;
+}
+
+.nav-links li {
+    margin-bottom: 1rem;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.nav-links li.active a,
+.nav-links a:hover {
+    background: linear-gradient(90deg, rgba(217, 70, 239, 0.1) 0%, transparent 100%);
+    color: var(--text-white);
+    border-left: 3px solid var(--purple);
+}
+
+.nav-links i {
+    font-size: 1.2rem;
+}
+
+/* --- 3. MAIN LAYOUT --- */
+.main-content {
+    margin-left: var(--sidebar-width);
+    flex: 1;
+    padding: 2rem;
+    width: calc(100% - var(--sidebar-width));
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.header-title h1 {
+    font-size: 1.5rem;
+    font-weight: 500;
+}
+
+.user-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.user-actions i {
+    font-size: 1.4rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.user-actions i:hover {
+    color: var(--text-white);
+}
+
+.notification-icon {
+    position: relative;
+}
+
+.dot {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    background-color: #ef4444;
+    border-radius: 50%;
+}
+
+.profile-preview {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.profile-preview img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--purple);
+}
+
+.profile-preview.text {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+    font-size: 0.85rem;
+}
+
+.profile-preview.name {
+    font-weight: 600;
+}
+
+/* --- 4. DASHBOARD GRID SYSTEM --- */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: auto auto; /* 2 Rows */
+    gap: 25px;
+}
+
+/* Base Card Style (Glassmorphism) */
+.card {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px); /* Glass Effect */
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    border: 1px solid rgba(255,255,255,0.08);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.card-header h2 {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.btn-glass {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text-muted);
+    padding: 6px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.8rem;
+    transition: all 0.3s;
+}
+
+.btn-glass:hover {
+    background: rgba(255,255,255,0.1);
+    color: var(--text-white);
+}
+
+/* --- 5. NEON GLOW THEMES --- */
+/* Specific colored borders/shadows for each card based on the image */
+
+.glow-purple {
+    border-top: 1px solid var(--purple);
+    box-shadow: 0 -5px 20px rgba(217, 70, 239, 0.15), 0 0 0 1px rgba(217, 70, 239, 0.1) inset;
+}
+
+.glow-green {
+    border-top: 1px solid var(--green);
+    box-shadow: 0 -5px 20px rgba(34, 197, 94, 0.15), 0 0 0 1px rgba(34, 197, 94, 0.1) inset;
+}
+
+.glow-blue {
+    border-top: 1px solid var(--blue);
+    box-shadow: 0 -5px 20px rgba(14, 165, 233, 0.15), 0 0 0 1px rgba(14, 165, 233, 0.1) inset;
+}
+
+.glow-orange {
+    border-top: 1px solid var(--orange);
+    box-shadow: 0 -5px 20px rgba(249, 115, 22, 0.15), 0 0 0 1px rgba(249, 115, 22, 0.1) inset;
+}
+
+/* --- 6. QUADRANT 1: TIMELINE --- */
+.timeline-container {
+    position: relative;
+    padding: 20px 0;
+}
+
+.timeline-line {
+    position: absolute;
+    top: 35px; /* Center with icons */
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+    z-index: 1;
+}
+
+.timeline-progress {
+    height: 100%;
+    background: linear-gradient(90deg, var(--purple), #8b5cf6);
+    border-radius: 4px;
+    position: relative;
+}
+
+.timeline-progress::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: -2px;
+    width: 8px;
+    height: 8px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #fff;
+}
+
+.steps-wrapper {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    z-index: 2;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    opacity: 0.5;
+    transition: all 0.3s;
+}
+
+.step.active,.step.completed {
+    opacity: 1;
+}
+
+.step-icon {
+    width: 35px;
+    height: 35px;
+    background: #1e293b;
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.3s;
+}
+
+.step.active.step-icon {
+    background: var(--purple);
+    border-color: var(--purple);
+    box-shadow: 0 0 15px var(--purple-glow);
+    transform: scale(1.1);
+}
+
+.step.completed.step-icon {
+    background: #22c55e;
+    border-color: #22c55e;
+}
+
+.step-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+/* --- 7. QUADRANT 2: COURSES --- */
+.courses-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.course-item {
+    background: rgba(255,255,255,0.03);
+    padding: 10px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: background 0.3s;
+}
+
+.course-item:hover {
+    background: rgba(255,255,255,0.08);
+}
+
+.course-thumb {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    position: relative;
+}
+
+.course-thumb.rating {
+    font-size: 0.6rem;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(0,0,0,0.5);
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+/* Gradients for course thumbnails */
+.gradient-1 { background: linear-gradient(135deg, #ec4899, #8b5cf6); }
+.gradient-2 { background: linear-gradient(135deg, #f59e0b, #ef4444); }
+.gradient-3 { background: linear-gradient(135deg, #3b82f6, #06b6d4); }
+.gradient-4 { background: linear-gradient(135deg, #10b981, #3b82f6); }
+
+.course-details h4 {
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.stars {
+    color: #f59e0b;
+    font-size: 0.8rem;
+}
+
+/* --- 8. QUADRANT 3: SKILLS (CHART) --- */
+.skills-layout {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 20px;
+    height: 200px;
+}
+
+.chart-wrapper {
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+
+.skills-list {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 15px;
+}
+
+.skill-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.skill-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.box-blue { background: rgba(14, 165, 233, 0.2); color: #0ea5e9; }
+.box-red { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+.box-green { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+
+.skill-info span {
+    font-size: 0.9rem;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.mini-stars {
+    font-size: 0.7rem;
+    color: #fbbf24;
+}
+
+/* --- 9. QUADRANT 4: AI CHAT --- */
+.ai-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    height: 220px;
+}
+
+.chat-interface {
+    background: rgba(0,0,0,0.2);
+    border-radius: 16px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    font-size: 0.9rem;
+    color: var(--orange);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chat-history {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding-right: 5px;
+}
+
+/* Custom Scrollbar for Chat */
+.chat-history::-webkit-scrollbar {
+    width: 4px;
+}
+.chat-history::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+}
+
+.msg {
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    max-width: 90%;
+}
+
+.msg.ai {
+    background: rgba(255,255,255,0.05);
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
+}
+
+.msg.user {
+    background: var(--blue);
+    align-self: flex-end;
+    border-bottom-right-radius: 2px;
+}
+
+.chat-input-area {
+    display: flex;
+    gap: 5px;
+}
+
+.chat-input-area input {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+    color: white;
+    font-size: 0.8rem;
+    outline: none;
+}
+
+.chat-input-area button {
+    background: var(--blue);
+    border: none;
+    width: 30px;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+}
+
+.goal-setting {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    justify-content: center;
+}
+
+.goal-setting h3 {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+}
+
+.input-group input, 
+.input-group select {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 10px;
+    border-radius: 10px;
+    color: white;
+    font-size: 0.9rem;
+    outline: none;
+}
+
+.input-group select option {
+    background: var(--bg-main);
+}
+
+.btn-send-goal {
+    width: 100%;
+    background: linear-gradient(90deg, #ec4899, #8b5cf6);
+    border: none;
+    padding: 10px;
+    border-radius: 10px;
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
+    transition: transform 0.2s;
+}
+
+.btn-send-goal:active {
+    transform: scale(0.98);
+}
+
+/* --- 10. RESPONSIVE MEDIA QUERIES --- */
+@media (max-width: 1024px) {
+   .dashboard-grid {
+        grid-template-columns: 1fr; /* Stack into 1 column */
+    }
+}
+
+@media (max-width: 768px) {
+   .sidebar {
+        width: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+   .main-content {
+        margin-left: 0;
+        width: 100%;
+    }
+}

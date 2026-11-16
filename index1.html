@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartLearn Pro - Secure Learning Hub</title>
+    
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Outfit', sans-serif; background-color: #020617; color: white; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 10px; }
+        .glass-effect { background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); }
+        .animate-fade-in { animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        .animate-pop { animation: pop 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pop { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .resume-paper { font-family: 'Playfair Display', serif; color: #1e293b; background: white; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        @media print { body * { visibility: hidden; } .resume-printable, .resume-printable * { visibility: visible; } .resume-printable { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; box-shadow: none; } .no-print { display: none !important; } }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- 1. FULL DATASET & ICONS ---
+        // EDITED: Updated with your full 152 questions dataset
+        const CHAT_DATASET = [
+            {"q":"What is Artificial Intelligence (AI)?","a":"Artificial Intelligence is the field of building systems that can perform tasks requiring human-like intelligence, such as learning, reasoning, and decision-making."},
+            {"q":"What is Machine Learning (ML)?","a":"Machine Learning is a subset of AI where models learn patterns from data to make predictions or decisions without being explicitly programmed."},
+            {"q":"What is Deep Learning?","a":"Deep Learning is a subset of ML that uses neural networks with many layers to learn complex patterns from data."},
+            {"q":"What is supervised learning?","a":"Supervised learning trains a model using labeled data, where inputs have known correct outputs."},
+            {"q":"What is unsupervised learning?","a":"Unsupervised learning finds patterns or groups in unlabeled data without known outputs."},
+            {"q":"What is reinforcement learning?","a":"Reinforcement learning trains an agent to take actions by rewarding good actions and penalizing bad actions over time."},
+            {"q":"What is a dataset?","a":"A dataset is a collection of related data used for analysis, training models, or testing systems."},
+            {"q":"What are features in ML?","a":"Features are input variables (columns) used by a model to learn and make predictions."},
+            {"q":"What is a label in ML?","a":"A label is the target output value that a model tries to predict in supervised learning."},
+            {"q":"What is model training?","a":"Model training is the process of learning parameters from training data to minimize prediction error."},
+            {"q":"What is model testing?","a":"Model testing evaluates a trained model on unseen data to measure its performance."},
+            {"q":"What is overfitting?","a":"Overfitting happens when a model learns training data too well, including noise, and performs poorly on new data."},
+            {"q":"What is underfitting?","a":"Underfitting happens when a model is too simple to capture patterns, resulting in poor performance on both training and test data."},
+            {"q":"What is cross-validation?","a":"Cross-validation is a technique to evaluate model performance by splitting data into multiple train-test folds."},
+            {"q":"What is accuracy in ML?","a":"Accuracy is the percentage of correct predictions made by a model out of total predictions."},
+            {"q":"What is precision?","a":"Precision is the ratio of correctly predicted positive cases to all predicted positive cases."},
+            {"q":"What is recall?","a":"Recall is the ratio of correctly predicted positive cases to all actual positive cases."},
+            {"q":"What is F1-score?","a":"F1-score is the harmonic mean of precision and recall, useful when classes are imbalanced."},
+            {"q":"What is a confusion matrix?","a":"A confusion matrix is a table showing counts of true positives, false positives, true negatives, and false negatives."},
+            {"q":"What is a neural network?","a":"A neural network is a model inspired by the brain, made of layers of nodes that learn patterns from data."},
+            {"q":"What is an activation function?","a":"An activation function introduces non-linearity in neural networks, helping them learn complex patterns."},
+            {"q":"What is gradient descent?","a":"Gradient descent is an optimization algorithm that minimizes loss by updating parameters in the direction of steepest descent."},
+            {"q":"What is learning rate?","a":"Learning rate controls how much the model parameters change during training."},
+            {"q":"What is loss function?","a":"A loss function measures how far predictions are from actual values; training aims to minimize it."},
+            {"q":"What is NLP?","a":"NLP (Natural Language Processing) is AI that helps computers understand, process, and generate human language."},
+            {"q":"What is a chatbot?","a":"A chatbot is a program that simulates conversation with users using rules or AI models."},
+            {"q":"What is computer vision?","a":"Computer vision enables machines to interpret and understand images and videos."},
+            {"q":"What is classification?","a":"Classification predicts a category or class label, such as spam vs not spam."},
+            {"q":"What is regression?","a":"Regression predicts a continuous numerical value, such as house price prediction."},
+            {"q":"What is clustering?","a":"Clustering groups similar data points together without using labels."},
+            {"q":"What is feature scaling?","a":"Feature scaling adjusts feature values to a similar range, improving model training stability."},
+            {"q":"What is normalization in ML?","a":"Normalization scales features to a specific range like 0 to 1."},
+            {"q":"What is standardization?","a":"Standardization transforms data to have mean 0 and standard deviation 1."},
+            {"q":"What is a train-test split?","a":"Train-test split divides data into training and testing parts, commonly 80/20 or 70/30."},
+            {"q":"What is AI bias?","a":"AI bias occurs when a model produces unfair results due to biased training data or design."},
+            {"q":"What is explainable AI (XAI)?","a":"Explainable AI focuses on making model decisions understandable to humans."},
+            {"q":"What is Cloud Computing?","a":"Cloud computing provides computing resources like servers, storage, and services over the internet on demand."},
+            {"q":"What are the benefits of cloud computing?","a":"Benefits include scalability, pay-as-you-go pricing, high availability, and reduced infrastructure management."},
+            {"q":"What is IaaS?","a":"IaaS (Infrastructure as a Service) provides virtual machines, networking, and storage resources."},
+            {"q":"What is PaaS?","a":"PaaS (Platform as a Service) provides a development platform to build and deploy apps without managing servers."},
+            {"q":"What is SaaS?","a":"SaaS (Software as a Service) delivers software applications over the internet, like Gmail or Google Docs."},
+            {"q":"What is public cloud?","a":"Public cloud is shared cloud infrastructure provided by third-party companies like AWS, Azure, or Google Cloud."},
+            {"q":"What is private cloud?","a":"Private cloud is cloud infrastructure dedicated to a single organization for better control and security."},
+            {"q":"What is hybrid cloud?","a":"Hybrid cloud combines public cloud and private cloud resources, allowing data and apps to move between them."},
+            {"q":"What is multi-cloud?","a":"Multi-cloud means using services from multiple cloud providers to avoid vendor lock-in or improve reliability."},
+            {"q":"What is virtualization?","a":"Virtualization creates virtual versions of hardware resources like servers, storage, and networks."},
+            {"q":"What is a virtual machine (VM)?","a":"A VM is a software-based computer running an operating system on virtualized hardware."},
+            {"q":"What is a container?","a":"A container is a lightweight package containing an app and its dependencies, sharing the host OS kernel."},
+            {"q":"Docker vs VM?","a":"Docker containers are lightweight and share the OS kernel; VMs run full OS and are heavier."},
+            {"q":"What is Kubernetes?","a":"Kubernetes is a container orchestration platform that manages deployment, scaling, and operations of containers."},
+            {"q":"What is serverless computing?","a":"Serverless computing runs code without managing servers; you pay only for execution time."},
+            {"q":"What is AWS Lambda?","a":"AWS Lambda is a serverless compute service that runs code in response to events."},
+            {"q":"What is cloud storage?","a":"Cloud storage stores files and data on remote servers accessible via internet."},
+            {"q":"What is object storage?","a":"Object storage stores data as objects with metadata, ideal for images, backups, and logs."},
+            {"q":"What is block storage?","a":"Block storage stores data in fixed-size blocks, commonly used for databases and VMs."},
+            {"q":"What is cloud database?","a":"A cloud database is a database service hosted and managed on the cloud."},
+            {"q":"What is scalability?","a":"Scalability is the ability to increase or decrease resources based on demand."},
+            {"q":"What is auto-scaling?","a":"Auto-scaling automatically adjusts resources like servers based on traffic or CPU usage."},
+            {"q":"What is load balancing?","a":"Load balancing distributes incoming traffic across multiple servers to improve performance and reliability."},
+            {"q":"What is CDN?","a":"CDN (Content Delivery Network) delivers content from servers close to users to reduce latency."},
+            {"q":"What is cloud security?","a":"Cloud security includes practices and tools to protect cloud data, apps, and infrastructure."},
+            {"q":"What is IAM?","a":"IAM (Identity and Access Management) controls user access and permissions for cloud resources."},
+            {"q":"What is encryption at rest?","a":"Encryption at rest protects stored data by encrypting it on disk."},
+            {"q":"What is encryption in transit?","a":"Encryption in transit protects data during network transfer using protocols like TLS."},
+            {"q":"What is a region in cloud?","a":"A region is a geographic location where cloud providers host data centers."},
+            {"q":"What is an availability zone?","a":"An availability zone is an isolated data center within a region to improve fault tolerance."},
+            {"q":"What is a VPC?","a":"VPC (Virtual Private Cloud) is a private network environment in the cloud for your resources."},
+            {"q":"What is DevOps?","a":"DevOps combines development and operations to automate software building, testing, and deployment."},
+            {"q":"What is CI/CD in cloud?","a":"CI/CD automates continuous integration and deployment to release software faster and safely."},
+            {"q":"What is a cloud API?","a":"A cloud API allows applications to interact with cloud services programmatically."},
+            {"q":"What is Web Development?","a":"Web development is the process of building websites and web applications."},
+            {"q":"What is frontend development?","a":"Frontend development builds the user interface using HTML, CSS, and JavaScript."},
+            {"q":"What is backend development?","a":"Backend development handles server-side logic, databases, and APIs."},
+            {"q":"What is full-stack development?","a":"Full-stack development includes both frontend and backend development."},
+            {"q":"What is HTML?","a":"HTML is the standard markup language used to structure web pages."},
+            {"q":"What is CSS?","a":"CSS is used to style and design HTML elements on web pages."},
+            {"q":"What is JavaScript?","a":"JavaScript is a programming language used to make web pages interactive."},
+            {"q":"What is responsive design?","a":"Responsive design ensures web pages work well on different screen sizes like mobile and desktop."},
+            {"q":"What is a web browser?","a":"A web browser is software that retrieves and displays web pages, like Chrome or Firefox."},
+            {"q":"What is a URL?","a":"A URL is the address of a resource on the internet, such as a web page link."},
+            {"q":"What is HTTP?","a":"HTTP is a protocol used for communication between clients and web servers."},
+            {"q":"What is HTTPS?","a":"HTTPS is secure HTTP that encrypts communication using TLS."},
+            {"q":"What is REST API?","a":"A REST API is a web API style that uses HTTP methods to access resources."},
+            {"q":"What are HTTP methods?","a":"Common HTTP methods are GET, POST, PUT, PATCH, and DELETE."},
+            {"q":"What is GET request?","a":"GET fetches data from a server without changing it."},
+            {"q":"What is POST request?","a":"POST sends data to a server to create a new resource."},
+            {"q":"What is PUT request?","a":"PUT updates or replaces an existing resource completely."},
+            {"q":"What is DELETE request?","a":"DELETE removes a resource from the server."},
+            {"q":"What is JSON?","a":"JSON is a lightweight data format used for exchanging data between server and client."},
+            {"q":"What is an API endpoint?","a":"An API endpoint is a specific URL where an API can be accessed."},
+            {"q":"What is CORS?","a":"CORS controls cross-domain requests between browsers and servers for security."},
+            {"q":"What is authentication?","a":"Authentication verifies a user's identity, like login using username and password."},
+            {"q":"What is authorization?","a":"Authorization checks what permissions an authenticated user has."},
+            {"q":"What is JWT?","a":"JWT (JSON Web Token) is a compact token used for authentication and secure information exchange."},
+            {"q":"What is session-based authentication?","a":"Session-based auth stores user session data on the server and uses cookies to track login state."},
+            {"q":"What is a cookie?","a":"A cookie is small data stored in the browser used for sessions, preferences, and tracking."},
+            {"q":"What is a database?","a":"A database is an organized collection of data that can be easily accessed and managed."},
+            {"q":"What is SQL?","a":"SQL is a language used to query and manage relational databases."},
+            {"q":"What is NoSQL?","a":"NoSQL databases store data in flexible formats like documents or key-value pairs."},
+            {"q":"What is CRUD in web apps?","a":"CRUD refers to Create, Read, Update, and Delete operations."},
+            {"q":"What is MVC architecture?","a":"MVC divides an app into Model (data), View (UI), and Controller (logic) components."},
+            {"q":"What is Flask?","a":"Flask is a lightweight Python web framework used to build web applications and APIs."},
+            {"q":"What is Django?","a":"Django is a full-featured Python web framework that includes ORM, admin panel, and built-in security tools."},
+            {"q":"What is Node.js?","a":"Node.js allows JavaScript to run on the server side using the V8 engine."},
+            {"q":"What is React?","a":"React is a JavaScript library for building user interfaces using components."},
+            {"q":"What is Angular?","a":"Angular is a front-end framework for building single-page applications using TypeScript."},
+            {"q":"What is Vue.js?","a":"Vue.js is a progressive JavaScript framework for building UIs and single-page apps."},
+            {"q":"What is an ORM?","a":"ORM (Object Relational Mapping) maps database tables to programming objects, like SQLAlchemy in Python."},
+            {"q":"What is SQLAlchemy?","a":"SQLAlchemy is a Python ORM library used to interact with databases using Python classes."},
+            {"q":"What is a webhook?","a":"A webhook is a way for an app to send real-time data to another app when an event occurs."},
+            {"q":"What is WebSocket?","a":"WebSocket enables real-time two-way communication between client and server."},
+            {"q":"What is Data Science?","a":"Data science involves collecting, cleaning, analyzing data, and building models to extract insights."},
+            {"q":"What is data cleaning?","a":"Data cleaning fixes missing values, duplicates, and incorrect data to improve quality."},
+            {"q":"What is EDA?","a":"EDA (Exploratory Data Analysis) is analyzing datasets using statistics and visualizations to understand patterns."},
+            {"q":"What is a dataframe?","a":"A dataframe is a 2D tabular data structure used in pandas with rows and columns."},
+            {"q":"What is pandas?","a":"Pandas is a Python library used for data manipulation and analysis."},
+            {"q":"What is NumPy?","a":"NumPy is a Python library for numerical computing and working with arrays."},
+            {"q":"What is Matplotlib?","a":"Matplotlib is a Python library for creating charts and visualizations."},
+            {"q":"What is data visualization?","a":"Data visualization represents data using charts and graphs to understand trends and insights."},
+            {"q":"What is correlation?","a":"Correlation measures the relationship between two variables, ranging from -1 to +1."},
+            {"q":"What is outlier?","a":"An outlier is a data point that differs significantly from other observations."},
+            {"q":"What is mean?","a":"Mean is the average value calculated by sum of values divided by count."},
+            {"q":"What is median?","a":"Median is the middle value when data is sorted."},
+            {"q":"What is mode?","a":"Mode is the value that occurs most frequently in a dataset."},
+            {"q":"What is variance?","a":"Variance measures how spread out the values are from the mean."},
+            {"q":"What is standard deviation?","a":"Standard deviation is the square root of variance and shows data spread."},
+            {"q":"What is probability?","a":"Probability is the measure of how likely an event is to occur, from 0 to 1."},
+            {"q":"What is hypothesis testing?","a":"Hypothesis testing is a statistical method to decide if an assumption about data is true."},
+            {"q":"What is p-value?","a":"p-value indicates the probability of seeing results at least as extreme if the null hypothesis is true."},
+            {"q":"What is regression in data science?","a":"Regression predicts a continuous value using input features."},
+            {"q":"What is linear regression?","a":"Linear regression models the relationship between input and output as a straight line."},
+            {"q":"What is logistic regression?","a":"Logistic regression is used for binary classification problems using probability output."},
+            {"q":"What is decision tree?","a":"A decision tree is a model that splits data into branches based on feature conditions."},
+            {"q":"What is random forest?","a":"Random forest is an ensemble method using multiple decision trees to improve accuracy."},
+            {"q":"What is k-means clustering?","a":"K-means groups data into k clusters by minimizing distance to cluster centers."},
+            {"q":"What is PCA?","a":"PCA (Principal Component Analysis) reduces dimensions while keeping maximum variance in data."},
+            {"q":"What is feature engineering?","a":"Feature engineering creates or transforms features to improve model performance."},
+            {"q":"What is a pipeline in ML?","a":"A pipeline is a sequence of processing steps like scaling, training, and evaluation."},
+            {"q":"What is Big Data?","a":"Big Data refers to extremely large datasets that require special tools to store and process."},
+            {"q":"What is Hadoop?","a":"Hadoop is a framework for distributed storage and processing of big data."},
+            {"q":"What is Spark?","a":"Apache Spark is a fast distributed computing engine for big data processing."},
+            {"q":"What is ETL?","a":"ETL stands for Extract, Transform, Load — moving and preparing data for analytics."},
+            {"q":"What is data warehouse?","a":"A data warehouse stores structured data from multiple sources for analysis and reporting."},
+            {"q":"What is a data lake?","a":"A data lake stores raw structured and unstructured data for future processing."},
+            {"q":"What is business intelligence (BI)?","a":"BI uses data analysis and dashboards to support business decision-making."},
+            {"q":"What is a dashboard?","a":"A dashboard is a visual interface showing key metrics and charts for monitoring performance."},
+            {"q":"What is A/B testing?","a":"A/B testing compares two versions to see which performs better using real user data."},
+            {"q":"What is data preprocessing?","a":"Data preprocessing includes cleaning, transforming, and preparing data for analysis or ML."},
+            {"q":"What is one-hot encoding?","a":"One-hot encoding converts categorical values into binary columns for ML models."},
+            {"q":"What is missing value imputation?","a":"Imputation replaces missing values using methods like mean, median, or most frequent value."},
+            {"q":"What is model deployment?","a":"Model deployment is making a trained ML model available for real-world predictions via app or API."},
+            {"q":"What is MLOps?","a":"MLOps combines ML and DevOps to automate training, deployment, monitoring, and retraining of ML models."}
+        ];
+
+        const Icons = {
+            Home: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+            User: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+            Lock: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
+            LogOut: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>,
+            File: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>,
+            BookOpen: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
+            Activity: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
+            MessageSquare: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+            Upload: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>,
+            Check: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+            Send: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>,
+            Robot: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>,
+            Save: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>,
+            X: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+            ExternalLink: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>,
+            Download: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
+            Plus: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+            Image: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>,
+            PlayCircle: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+        };
+
+        const Icon = ({ name, size = 20, className }) => {
+            const Comp = Icons[name];
+            return Comp ? <Comp width={size} height={size} className={className} /> : null;
+        };
+
+        // --- YOUTUBE PLAYER COMPONENT FOR AUTO-TICK ---
+        const YouTubePlayer = ({ videoId, isCompleted, onComplete }) => {
+            const playerDivRef = useRef(null);
+            const playerRef = useRef(null);
+
+            useEffect(() => {
+                const loadYT = () => {
+                    if (window.YT && window.YT.Player) {
+                        if (!playerRef.current) {
+                            playerRef.current = new window.YT.Player(playerDivRef.current, {
+                                videoId: videoId,
+                                playerVars: {
+                                    autoplay: 0,
+                                    controls: 1,
+                                    rel: 0,
+                                    modestbranding: 1
+                                },
+                                events: {
+                                    'onStateChange': (event) => {
+                                        // 0 corresponds to window.YT.PlayerState.ENDED
+                                        if (event.data === 0 && !isCompleted) {
+                                            onComplete();
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    } else {
+                        setTimeout(loadYT, 500);
+                    }
+                };
+                loadYT();
+                
+                return () => {
+                    if (playerRef.current && typeof playerRef.current.destroy === 'function') {
+                        playerRef.current.destroy();
+                    }
+                };
+            }, [videoId, isCompleted, onComplete]);
+
+            return <div ref={playerDivRef} className="w-full h-full rounded-xl"></div>;
+        };
+
+        // --- 2. AUTHENTICATION COMPONENTS ---
+        const AuthView = ({ onLoginSuccess }) => {
+            const [isLogin, setIsLogin] = useState(true);
+            const [formData, setFormData] = useState({ username: '', password: '' });
+            const [error, setError] = useState('');
+            const [successMsg, setSuccessMsg] = useState('');
+
+            const existingUser = JSON.parse(localStorage.getItem('smartLearnUser'));
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                setError('');
+                setSuccessMsg('');
+
+                if (isLogin) {
+                    if (existingUser && existingUser.username === formData.username && existingUser.password === formData.password) {
+                        onLoginSuccess(existingUser);
+                    } else {
+                        setError('Invalid Username or Password. Please try again.');
+                    }
+                } else {
+                    if (formData.username.length < 3 || formData.password.length < 4) {
+                        setError('Username must be 3+ chars and Password 4+ chars.');
+                        return;
+                    }
+                    localStorage.setItem('smartLearnUser', JSON.stringify(formData));
+                    setSuccessMsg('Account Created Successfully! Please Login.');
+                    setIsLogin(true);
+                    setFormData({ username: '', password: '' });
+                }
+            };
+
+            return (
+                <div className="min-h-screen flex items-center justify-center bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-[#020617] to-[#020617] p-4">
+                    <div className="glass-effect p-8 rounded-3xl w-full max-w-md animate-pop border border-slate-700">
+                        <div className="text-center mb-8">
+                            <h1 className="text-3xl font-extrabold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent mb-2">SmartLearn Pro</h1>
+                            <p className="text-slate-400">{isLogin ? 'Welcome Back! Login to continue.' : 'Create an account to start learning.'}</p>
+                        </div>
+
+                        {error && <div className="bg-red-500/20 text-red-400 p-3 rounded-lg mb-4 text-sm text-center">{error}</div>}
+                        {successMsg && <div className="bg-green-500/20 text-green-400 p-3 rounded-lg mb-4 text-sm text-center">{successMsg}</div>}
+
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div>
+                                <label className="block text-sm text-slate-300 mb-1">Username</label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-3 text-slate-500"><Icon name="User" size={18}/></span>
+                                    <input type="text" className="w-full bg-slate-800 border border-slate-600 rounded-xl py-2.5 pl-10 pr-4 text-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Enter your username" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} required />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm text-slate-300 mb-1">Password</label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-3 text-slate-500"><Icon name="Lock" size={18}/></span>
+                                    <input type="password" className="w-full bg-slate-800 border border-slate-600 rounded-xl py-2.5 pl-10 pr-4 text-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Enter your password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} required />
+                                </div>
+                            </div>
+                            <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 py-3 rounded-xl font-bold text-white hover:shadow-lg hover:shadow-blue-600/30 transition-all mt-4">
+                                {isLogin ? 'Login' : 'Sign Up'}
+                            </button>
+                        </form>
+
+                        <div className="mt-6 text-center text-sm text-slate-400">
+                            {isLogin ? "Don't have an account? " : "Already have an account? "}
+                            <button onClick={() => { setIsLogin(!isLogin); setError(''); setSuccessMsg(''); }} className="text-blue-400 font-bold hover:underline">
+                                {isLogin ? 'Sign Up' : 'Login'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- 3. COURSE CONTENT GENERATOR & EXPANDED DATA ---
+        const generateRichContent = (title, paragraph) => {
+            return `
+                <div class="space-y-8">
+                    <div class="border-b border-gray-300 pb-6 text-center">
+                        <h1 class="text-4xl font-extrabold text-slate-900 mb-2">${title}</h1>
+                        <p class="text-lg text-slate-600">Professional Mastery Guide</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+                        <h2 class="text-2xl font-bold text-blue-900 mb-4 border-l-4 border-blue-500 pl-4">Core Concepts</h2>
+                        <p class="text-lg text-slate-700 leading-relaxed text-justify">${paragraph}</p>
+                    </div>
+                </div>
+            `;
+        };
+
+        const LEARNING_DATA = [
+            { 
+                id: 'ai', title: 'Artificial Intelligence Mastery', desc: 'ML, Deep Learning, NLP & Ethics.', color: 'from-pink-500 to-rose-500', 
+                video: { id: 'v_ai', url: 'G2fqAlgmoPo', completed: false },
+                w3: { id: 'w3_ai', url: 'https://www.w3schools.com/ai/', completed: false },
+                coursera: { id: 'c_ai', url: 'https://www.coursera.org/search?query=Artificial%20Intelligence', completed: false },
+                udemy: { id: 'u_ai', url: 'https://www.udemy.com/courses/search/?src=ukw&q=Artificial+Intelligence', completed: false },
+                docs: [
+                    { id: 'd1_ai', title: '5. What is AI?', content: generateRichContent('What is AI?', 'Artificial Intelligence (AI) is a revolutionary field of computer science dedicated to building systems capable of performing tasks that typically require human intelligence. This includes capabilities such as learning from experiences, reasoning through complex problems, understanding natural language, and making data-driven decisions. Unlike traditional programming where rules are explicitly written by humans, AI systems can adapt and improve over time. Modern AI applications range from virtual assistants and recommendation engines to autonomous vehicles and advanced medical diagnostics. By mimicking human cognitive functions, AI aims to automate repetitive tasks, enhance human creativity, and solve intricate global challenges efficiently.'), completed: false }, 
+                    { id: 'd2_ai', title: '6. Machine Learning Concepts', content: generateRichContent('Machine Learning Concepts', 'Machine Learning (ML) is a vital subset of AI where mathematical models learn intricate patterns from vast amounts of data to make predictions or decisions, entirely without being explicitly programmed for every scenario. It is broadly categorized into three types: Supervised learning, where models are trained using labeled datasets with known correct outputs; Unsupervised learning, which involves finding hidden structures or groupings in raw, unlabeled data; and Reinforcement learning, where an agent learns to make sequences of decisions by receiving rewards or penalties. ML powers essential modern technologies like spam filters, predictive text, and personalized social media feeds.'), completed: false }, 
+                    { id: 'd3_ai', title: '7. Deep Learning & Neural Networks', content: generateRichContent('Deep Learning', 'Deep Learning is an advanced subset of Machine Learning that utilizes multi-layered Artificial Neural Networks to analyze and learn from highly complex, unstructured data like images, audio, and text. Inspired by the biological structure of the human brain, these neural networks consist of interconnected layers of nodes or "neurons." The "deep" in deep learning refers to the numerous hidden layers between the input and output layers, which enable the model to extract hierarchical features automatically. This technology is the driving force behind state-of-the-art innovations, including facial recognition systems, real-time language translation, and generative AI models like ChatGPT.'), completed: false }, 
+                    { id: 'd4_ai', title: '8. NLP & Chatbots', content: generateRichContent('Natural Language Processing', 'Natural Language Processing (NLP) is a specialized branch of Artificial Intelligence that focuses on the interaction between computers and human language. It empowers machines to read, understand, interpret, and generate human language in a valuable and meaningful way. NLP combines computational linguistics with statistical, machine learning, and deep learning models to process text and voice data. Key applications include sentiment analysis, language translation, speech recognition, and advanced conversational agents or chatbots. By breaking down language into shorter, elemental pieces, NLP algorithms can understand context, intent, and emotion, bridging the communication gap between humans and digital systems effectively.'), completed: false },
+                    { id: 'd5_ai', title: '9. Computer Vision', content: generateRichContent('Computer Vision', 'Computer Vision is a transformative field of Artificial Intelligence that enables computers and systems to derive meaningful information from digital images, videos, and other visual inputs. By utilizing deep learning models, particularly Convolutional Neural Networks (CNNs), machines can identify, classify, and track objects with remarkable accuracy. It essentially gives machines the ability to "see" and interpret the visual world just like humans do. Practical applications are incredibly diverse, encompassing facial recognition security systems, defect detection in manufacturing, medical image analysis for early disease detection, and providing the crucial visual perception required for self-driving cars to navigate safely.'), completed: false },
+                    { id: 'd6_ai', title: '10. AI Bias & Explainable AI', content: generateRichContent('Ethics in AI', 'AI Bias and Explainable AI (XAI) are critical components of ethical AI development. AI bias occurs when algorithms produce prejudiced or unfair results, often because they are trained on skewed, incomplete, or historically biased human data. This can lead to discrimination in hiring, lending, or law enforcement. To combat this, researchers focus on Explainable AI, which aims to make the decision-making processes of complex "black box" machine learning models transparent and understandable to humans. Ensuring fairness, accountability, and transparency in AI systems is essential for building public trust and ensuring these powerful technologies benefit society equitably.'), completed: false }
+                ] 
+            },
+            { 
+                id: 'cloud', title: 'Cloud Computing (AWS)', desc: 'AWS services, Docker, Kubernetes.', color: 'from-blue-500 to-cyan-500', 
+                video: { id: 'v_cloud', url: 'k1RI5locZE4', completed: false },
+                w3: { id: 'w3_cloud', url: 'https://www.w3schools.com/aws/', completed: false },
+                coursera: { id: 'c_cloud', url: 'https://www.coursera.org/search?query=Cloud%20Computing', completed: false },
+                udemy: { id: 'u_cloud', url: 'https://www.udemy.com/courses/search/?q=AWS+Cloud', completed: false },
+                docs: [
+                    { id: 'd1_cloud', title: '5. Cloud Basics & Benefits', content: generateRichContent('Cloud Basics', 'Cloud computing is the delivery of computing services—including servers, storage, databases, networking, software, and analytics—over the Internet ("the cloud") to offer faster innovation, flexible resources, and economies of scale. Instead of owning and maintaining physical data centers, you rent access to these services on an as-needed basis from a cloud provider like AWS, Microsoft Azure, or Google Cloud. The primary benefits include massive scalability, allowing you to increase or decrease resources instantly based on demand, a pay-as-you-go pricing model that eliminates upfront hardware costs, high availability across multiple geographic regions, and significantly reduced infrastructure management overhead for your IT teams.'), completed: false }, 
+                    { id: 'd2_cloud', title: '6. IaaS, PaaS, SaaS', content: generateRichContent('Cloud Service Models', 'Cloud services are generally categorized into three main models: IaaS, PaaS, and SaaS. Infrastructure as a Service (IaaS) provides the fundamental building blocks for cloud IT, offering virtual machines, networking capabilities, and storage resources, giving you the highest level of flexibility and management control. Platform as a Service (PaaS) removes the need for organizations to manage the underlying infrastructure (usually hardware and operating systems), providing a complete development and deployment environment to build and run applications easily. Software as a Service (SaaS) delivers fully functional software applications over the internet, managed entirely by the service provider, such as Gmail, Salesforce, or Google Docs.'), completed: false }, 
+                    { id: 'd3_cloud', title: '7. Virtualization & Containers', content: generateRichContent('Docker & VMs', 'Virtualization and containerization are fundamental technologies in modern cloud computing. Virtualization involves creating virtual, software-based representations of hardware resources like servers, storage, and networks, allowing multiple Virtual Machines (VMs) with their own full operating systems to run on a single physical server. While powerful, VMs can be resource-heavy. Conversely, a container is a lightweight, executable package that encapsulates an application and all its necessary dependencies, sharing the host machine\'s OS kernel. Technologies like Docker have made containers incredibly popular because they ensure that an application runs reliably and consistently regardless of the computing environment it is deployed into.'), completed: false }, 
+                    { id: 'd4_cloud', title: '8. Kubernetes Orchestration', content: generateRichContent('Kubernetes', 'Kubernetes, often abbreviated as K8s, is a powerful open-source container orchestration platform initially developed by Google. While containers like Docker are excellent for packaging applications, managing hundreds or thousands of them in a production environment becomes highly complex. Kubernetes solves this by automating the deployment, scaling, and operational management of containerized applications. It handles load balancing across containers, automates rollouts and rollbacks of updates, manages secure storage orchestration, and automatically restarts failed containers to maintain system health. By abstracting the underlying infrastructure, Kubernetes allows developers to focus purely on application development while ensuring high availability and resilience.'), completed: false },
+                    { id: 'd5_cloud', title: '9. Cloud Storage Types', content: generateRichContent('Cloud Storage', 'Cloud storage is a model of data storage where digital data is stored on remote servers accessed via the internet. There are several primary types used in cloud architectures. Object storage stores data as discrete units called "objects" within a flat address space, bundled with rich metadata and a unique identifier; it is highly scalable and ideal for unstructured data like images, backups, and log files (e.g., AWS S3). Block storage splits data into fixed-size blocks stored separately, offering high performance and low latency, making it the standard choice for databases and Enterprise Virtual Machines (e.g., AWS EBS).'), completed: false },
+                    { id: 'd6_cloud', title: '10. Serverless & AWS Lambda', content: generateRichContent('Serverless Computing', 'Serverless computing is a cloud execution model where the cloud provider dynamically manages the allocation and provisioning of servers. The term "serverless" does not mean servers are eliminated, but rather that the developer is completely freed from server management, provisioning, and scaling tasks. You simply write the code, and the infrastructure automatically scales up or down in exact response to incoming requests. You only pay for the precise compute time consumed during execution, down to the millisecond. AWS Lambda is a leading serverless compute service that runs your code seamlessly in response to specific triggers or events from other AWS services.'), completed: false }
+                ] 
+            },
+            { 
+                id: 'web', title: 'Full Stack Web Dev', desc: 'React, Node.js, MongoDB.', color: 'from-violet-500 to-purple-500', 
+                video: { id: 'v_web', url: 'nu_pCVPKzTk', completed: false },
+                w3: { id: 'w3_web', url: 'https://www.w3schools.com/whatis/', completed: false },
+                coursera: { id: 'c_web', url: 'https://www.coursera.org/search?query=Web+Development', completed: false },
+                udemy: { id: 'u_web', url: 'https://www.udemy.com/courses/search/?q=Full+Stack+Web+Development', completed: false },
+                docs: [
+                    { id: 'd1_web', title: '5. Web Dev Fundamentals', content: generateRichContent('Web Development', 'Web development is the comprehensive process of building and maintaining websites and web applications hosted on the internet or an intranet. It encompasses everything from creating a simple static plain text page to complex web-based internet applications, electronic businesses, and social network services. The field is broadly divided into frontend (client-side) and backend (server-side) development. Full-stack development refers to the mastery of both these domains, allowing a single developer to build complete, end-to-end applications. A strong grasp of how web browsers communicate with servers via the internet is the foundational step for any aspiring modern web developer.'), completed: false }, 
+                    { id: 'd2_web', title: '6. Frontend Technologies', content: generateRichContent('HTML, CSS & JS', 'Frontend development focuses entirely on building the user interface and experience—the visual elements that users interact with directly in their web browsers. The core trio of frontend technologies consists of HTML, CSS, and JavaScript. HTML (HyperText Markup Language) provides the structural foundation and semantic meaning of web content. CSS (Cascading Style Sheets) is responsible for the design, layout, styling, and visual aesthetics of the application. JavaScript is the programming language that brings web pages to life, adding complex interactivity, dynamic content updates, and animations. Furthermore, responsive design principles must be applied using CSS to ensure web pages function flawlessly across various device screen sizes.'), completed: false }, 
+                    { id: 'd3_web', title: '7. HTTP & REST APIs', content: generateRichContent('APIs & Protocols', 'HTTP (Hypertext Transfer Protocol) is the fundamental protocol used for fetching resources and transmitting hypermedia documents across the web, facilitating communication between clients (browsers) and web servers. An API (Application Programming Interface) allows different software systems to communicate with one another. A REST (Representational State Transfer) API is a highly popular architectural style for designing networked applications. It relies on standard HTTP methods to perform actions: GET (to retrieve data), POST (to create new data), PUT/PATCH (to update existing data), and DELETE (to remove data). Understanding these stateless, client-server interactions is crucial for connecting frontend interfaces with backend databases.'), completed: false }, 
+                    { id: 'd4_web', title: '8. Backend & Node.js', content: generateRichContent('Backend Architecture', 'Backend development constitutes the "behind-the-scenes" mechanics of a web application. It handles essential server-side logic, user authentication, database interactions, and the creation of APIs that frontend applications consume. Node.js is a powerful, open-source, cross-platform runtime environment that allows developers to execute JavaScript code outside of a web browser. Powered by Chrome\'s high-performance V8 JavaScript engine, Node.js enables developers to use a single programming language (JavaScript) for both client-side and server-side scripting. Its event-driven, non-blocking I/O model makes it exceptionally lightweight, efficient, and perfectly suited for building highly scalable, data-intensive, real-time web applications.'), completed: false },
+                    { id: 'd5_web', title: '9. SQL vs NoSQL Databases', content: generateRichContent('Databases', 'A database is an organized, structured collection of data designed for rapid search, retrieval, and management. Databases are broadly divided into SQL (Relational) and NoSQL (Non-relational) categories. SQL databases, like MySQL or PostgreSQL, store data in highly structured tables with predefined schemas consisting of rows and columns, making them ideal for complex queries and ensuring strict data integrity. NoSQL databases, such as MongoDB, are much more flexible, storing data in formats like JSON documents, key-value pairs, or graphs. They are highly scalable and better suited for applications handling massive volumes of unstructured, rapidly changing, or varied data types.'), completed: false },
+                    { id: 'd6_web', title: '10. Authentication & JWT', content: generateRichContent('Security', 'Security is paramount in web development, with authentication and authorization being foundational concepts. Authentication is the process of verifying a user\'s identity—confirming they are who they claim to be, typically via a username and password. Authorization determines what actions that authenticated user is permitted to perform. JWT (JSON Web Token) has become a modern standard for securely transmitting information between parties as a JSON object. In web apps, once a user logs in, the server generates a cryptographically signed JWT. The client stores this token and sends it with subsequent requests, allowing the server to verify the user statelessly without repeatedly checking the database.'), completed: false }
+                ] 
+            },
+            { 
+                id: 'ds', title: 'Data Science & Python', desc: 'Pandas, NumPy, Visualization.', color: 'from-emerald-500 to-green-500', 
+                video: { id: 'v_ds', url: 'LHBE6Q9XlzI', completed: false },
+                w3: { id: 'w3_ds', url: 'https://www.w3schools.com/datascience/', completed: false },
+                coursera: { id: 'c_ds', url: 'https://www.coursera.org/search?query=Data%20Science', completed: false },
+                udemy: { id: 'u_ds', url: 'https://www.udemy.com/courses/search/?q=Data+Science', completed: false },
+                docs: [
+                    { id: 'd1_ds', title: '5. What is Data Science?', content: generateRichContent('Data Science', 'Data Science is an interdisciplinary field that extracts actionable insights, knowledge, and value from massive amounts of structured and unstructured data. It involves a comprehensive lifecycle: formulating business problems, collecting raw data, cleaning and preparing it, analyzing it using statistical methods, and building predictive machine learning models. Data scientists utilize a blend of mathematics, advanced statistics, specialized programming, and deep domain expertise to uncover hidden trends and patterns. These insights are then communicated to stakeholders to drive strategic, data-informed business decisions, optimize operations, and create innovative products, making data science a cornerstone of modern technological advancement.'), completed: false }, 
+                    { id: 'd2_ds', title: '6. Data Cleaning & EDA', content: generateRichContent('Data Preparation', 'Real-world data is notoriously messy, making Data Cleaning and Exploratory Data Analysis (EDA) the most critical and time-consuming phases of data science. Data cleaning involves meticulously fixing or removing inaccurate records, handling missing values through imputation, and eliminating duplicate entries to ensure high data quality. EDA follows cleaning, where analysts use summary statistics and graphical representations to understand the data\'s underlying structure. By plotting histograms, scatter plots, and correlation matrices, data scientists can identify anomalies, detect outliers, uncover initial patterns, and test hypotheses, effectively guiding the selection of appropriate machine learning algorithms later in the pipeline.'), completed: false }, 
+                    { id: 'd3_ds', title: '7. Python Libraries (Pandas/NumPy)', content: generateRichContent('Python for Data', 'Python has emerged as the dominant language for Data Science, largely due to its incredibly powerful ecosystem of specialized libraries. NumPy (Numerical Python) is the foundational library providing support for massive, multi-dimensional arrays and matrices, along with a vast collection of high-level mathematical functions to operate on these arrays efficiently. Pandas is built on top of NumPy and introduces the DataFrame, a highly flexible 2D tabular data structure that makes data manipulation, filtering, and aggregation incredibly intuitive. Together with visualization libraries like Matplotlib and Seaborn, these tools form the standard, indispensable toolkit for any data manipulation and analysis task.'), completed: false }, 
+                    { id: 'd4_ds', title: '8. Basic Statistics', content: generateRichContent('Statistics', 'A solid foundation in statistics is absolutely essential for data science, providing the mathematical framework necessary to interpret data accurately. Descriptive statistics help summarize datasets using measures of central tendency, such as the Mean (the mathematical average), Median (the exact middle value in a sorted list), and Mode (the most frequently occurring value). Measures of dispersion, like Variance and Standard Deviation, indicate how spread out the data points are from the mean. Furthermore, understanding probability, probability distributions, and inferential statistics like hypothesis testing and p-values allows data scientists to draw robust conclusions about a population based on sample data.'), completed: false },
+                    { id: 'd5_ds', title: '9. Regression Models', content: generateRichContent('Machine Learning Algorithms', 'Regression is a fundamental supervised machine learning technique utilized primarily for predicting continuous numerical values based on input features. Linear Regression is the most basic form, attempting to model the relationship between a dependent variable and one or more independent variables by fitting a straight "best fit" line through the data points; it is widely used for forecasting, such as predicting house prices or sales revenue. Logistic Regression, despite its name, is actually used for binary classification problems (e.g., predicting "Yes/No" or "Spam/Not Spam"). It calculates the probability that a given instance belongs to a specific class using a logistic curve.'), completed: false },
+                    { id: 'd6_ds', title: '10. Big Data & Hadoop', content: generateRichContent('Big Data', 'Big Data refers to datasets whose vast volume, high velocity, and structural variety make them far too complex to be stored, processed, or analyzed using traditional relational database management systems. To harness this data, specialized distributed architectures were developed. Apache Hadoop is the pioneering framework designed for the distributed storage and processing of massive datasets across clusters of commodity computers. It relies on the Hadoop Distributed File System (HDFS) for storage and the MapReduce programming model for processing. Today, frameworks like Apache Spark have evolved to process big data in-memory, offering significantly faster performance for complex real-time analytics and machine learning workflows.'), completed: false }
+                ] 
+            }
+        ];
+
+        // --- 4. MAIN COMPONENTS ---
+
+        const Sidebar = ({ view, setView, profile, onLogout }) => (
+            <div className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col hidden md:flex h-full no-print">
+                <div className="p-6 text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">SmartLearn Pro</div>
+                <nav className="flex-1 p-4 space-y-2">
+                    {[{ id: 'dashboard', icon: 'Home', label: 'Dashboard' },{ id: 'profile', icon: 'User', label: '1. Create Profile' },{ id: 'resume', icon: 'Upload', label: '2. Resume Analysis' },{ id: 'learn', icon: 'BookOpen', label: '3. Online Courses' },{ id: 'progress', icon: 'Activity', label: '4. Track Progress' },{ id: 'chat', icon: 'MessageSquare', label: '5. AI Chatbot' }].map(item => (
+                        <button key={item.id} onClick={() => setView(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${view === item.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}><Icon name={item.icon} size={18} /><span className="font-medium">{item.label}</span></button>
+                    ))}
+                </nav>
+                <div className="p-4 border-t border-slate-800 space-y-4">
+                    <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-slate-700 overflow-hidden border border-slate-500 flex-shrink-0">{profile.photo ? <img src={profile.photo} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400"><Icon name="User" size={16}/></div>}</div><div><p className="text-sm font-bold text-white truncate max-w-[120px]">{profile.name || 'Student'}</p><p className="text-xs text-slate-400 truncate max-w-[120px]">{profile.degree || 'Learner'}</p></div></div>
+                    <button onClick={onLogout} className="w-full flex items-center justify-center gap-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white py-2 rounded-lg transition-colors text-sm font-medium"><Icon name="LogOut" size={16} /> Logout</button>
+                </div>
+            </div>
+        );
+
+        const GeneratedResume = ({ profile }) => (
+            <div className="mt-12 animate-fade-in resume-container pb-20">
+                <div className="flex justify-between items-center mb-6 no-print bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                    <h3 className="text-xl font-bold flex items-center gap-2 text-green-400"><Icon name="Check" /> Your Professional Resume</h3>
+                    <button onClick={() => window.print()} className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg flex items-center gap-2 font-medium transition-colors shadow-lg shadow-blue-600/20"><Icon name="Download" size={18} /> Download / Print PDF</button>
+                </div>
+                <div className="resume-printable resume-paper w-full max-w-[210mm] mx-auto p-[10mm] rounded-sm text-slate-800 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-4 bg-blue-900"></div>
+                    <div className="flex items-start gap-8 border-b-2 border-slate-800 pb-8 mb-8 mt-4">
+                        <div className="w-40 h-40 bg-slate-100 rounded-full overflow-hidden border-4 border-white shadow-xl flex-shrink-0">{profile.photo ? <img src={profile.photo} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 bg-slate-200 text-3xl">IMG</div>}</div>
+                        <div className="flex-1 pt-2">
+                            <h1 className="text-5xl font-extrabold uppercase tracking-wide text-slate-900 mb-2">{profile.name || 'YOUR NAME'}</h1>
+                            <p className="text-2xl font-serif italic text-blue-800 mb-4">{profile.degree} in {profile.dept}</p>
+                            <div className="grid grid-cols-2 gap-y-2 text-sm text-slate-600 font-medium"><span className="flex items-center gap-2">📧 {profile.email}</span><span className="flex items-center gap-2">📱 {profile.phone}</span><span className="flex items-center gap-2">📍 {profile.address}</span>{profile.linkedin && <span className="flex items-center gap-2 col-span-2">🔗 {profile.linkedin}</span>}</div>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-10">
+                        <div className="col-span-1 space-y-8 border-r border-slate-200 pr-6">
+                            <section><h3 className="text-sm font-bold uppercase tracking-widest text-blue-900 border-b-2 border-blue-900 pb-1 mb-4">Education</h3><div className="mb-4"><p className="font-bold text-lg text-slate-900">{profile.college}</p><p className="text-md italic text-slate-600">{profile.year} Year</p><p className="text-sm font-bold mt-1 text-blue-700">CGPA: {profile.cgpa}</p></div></section>
+                            <section><h3 className="text-sm font-bold uppercase tracking-widest text-blue-900 border-b-2 border-blue-900 pb-1 mb-4">Key Skills</h3><div className="flex flex-wrap gap-2">{profile.skills.split(',').map((skill, i) => <span key={i} className="bg-slate-100 px-3 py-1 rounded text-xs font-bold text-slate-700 border border-slate-300 shadow-sm">{skill.trim()}</span>)}</div></section>
+                        </div>
+                        <div className="col-span-2 space-y-8">
+                            <section><h3 className="text-sm font-bold uppercase tracking-widest text-blue-900 border-b-2 border-blue-900 pb-1 mb-4">Professional Summary</h3><p className="text-sm leading-loose text-slate-700 text-justify">A highly motivated and dedicated <strong>{profile.degree}</strong> student specializing in <strong>{profile.dept}</strong>. Equipped with a strong foundation in <strong>{profile.skills}</strong>. Eager to leverage academic knowledge and project experience.</p></section>
+                            <section><h3 className="text-sm font-bold uppercase tracking-widest text-blue-900 border-b-2 border-blue-900 pb-1 mb-4">Projects & Experience</h3><div className="text-sm whitespace-pre-line leading-relaxed text-slate-700 text-justify">{profile.projects || 'Detailed project descriptions will appear here.'}</div></section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const ProfileView = ({ profile, setProfile, handleProfileSave, isProfileSaved, handlePhotoUpload, handleNewProfile }) => (
+            <div className="max-w-5xl mx-auto animate-fade-in pb-20">
+                <div className="flex justify-between items-center mb-6"><h2 className="text-3xl font-bold flex items-center gap-3"><span className="p-2 bg-blue-500/20 rounded-lg text-blue-400"><Icon name="User" size={28}/></span> Create Profile</h2><button onClick={handleNewProfile} className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors"><Icon name="Plus" size={16}/> New Profile</button></div>
+                {!isProfileSaved && (
+                    <form onSubmit={handleProfileSave} className="glass-effect p-8 rounded-3xl mb-8 no-print">
+                        <div className="mb-8 flex items-center gap-6"><div className="w-24 h-24 rounded-full bg-slate-700 flex-shrink-0 overflow-hidden border-2 border-dashed border-slate-500 relative group cursor-pointer hover:border-blue-500 transition-colors">{profile.photo ? <img src={profile.photo} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400"><Icon name="Image" /></div>}<input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handlePhotoUpload} accept="image/*" /></div><div><h3 className="font-bold text-lg">Upload Photo</h3><p className="text-sm text-slate-400">Click circle to upload. Used in Resume.</p></div></div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">{[{ label: 'Full Name', key: 'name' }, { label: 'Email Address', key: 'email', type: 'email' }, { label: 'Phone Number', key: 'phone' }, { label: 'Home Address', key: 'address' }, { label: 'College / University', key: 'college' }, { label: 'Degree (e.g., B.E)', key: 'degree' }, { label: 'Department / Branch', key: 'dept' }, { label: 'Current Year', key: 'year' }, { label: 'CGPA / Percentage', key: 'cgpa' }, { label: 'LinkedIn Profile URL', key: 'linkedin' }, { label: 'Key Skills (Comma separated)', key: 'skills', full: true }, { label: 'Project Details (Describe fully)', key: 'projects', full: true, type: 'textarea' }].map(field => (<div key={field.key} className={field.full ? 'md:col-span-2' : ''}><label className="block text-sm text-slate-400 mb-2 font-medium">{field.label}</label>{field.type === 'textarea' ? <textarea className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none text-white h-24" placeholder={`Enter ${field.label}`} value={profile[field.key]} onChange={e => setProfile({...profile, [field.key]: e.target.value})}></textarea> : <input type={field.type || 'text'} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none text-white" placeholder={`Enter ${field.label}`} value={profile[field.key]} onChange={e => setProfile({...profile, [field.key]: e.target.value})} />}</div>))}</div>
+                        <button type="submit" className="mt-8 w-full bg-gradient-to-r from-blue-600 to-purple-600 py-4 rounded-xl font-bold text-lg hover:shadow-lg hover:shadow-blue-600/30 transition-all flex items-center justify-center gap-2"><Icon name="Save" /> Save & Generate Resume</button>
+                    </form>
+                )}
+                {isProfileSaved && <GeneratedResume profile={profile} />}
+            </div>
+        );
+
+        const ResumeView = ({ handleResumeUpload, isAnalyzing, resumeStats }) => (
+            <div className="max-w-3xl mx-auto animate-fade-in text-center">
+                <h2 className="text-3xl font-bold mb-2">AI Resume Analyzer</h2>
+                <p className="text-slate-400 mb-8">Upload your resume to see which job role fits you best.</p>
+                <div className="glass-effect p-12 rounded-3xl border-2 border-dashed border-slate-600 hover:border-blue-500 transition-all relative group cursor-pointer"><input type="file" className="absolute inset-0 opacity-0 cursor-pointer z-10" onChange={handleResumeUpload} accept=".pdf,.doc,.docx" /><div className="flex flex-col items-center gap-4 group-hover:scale-105 transition-transform"><div className="w-20 h-20 bg-blue-500/10 rounded-full flex items-center justify-center text-blue-400"><Icon name="Upload" size={40} /></div><h3 className="text-xl font-semibold">Drop your Resume here</h3><p className="text-slate-500">Supports PDF, DOCX (Max 5MB)</p></div></div>
+                {isAnalyzing && <div className="mt-8 p-6 glass-effect rounded-2xl animate-fade-in"><div className="loader mx-auto mb-4"></div><p className="text-blue-400 font-medium">AI is scanning your skills dynamically...</p></div>}
+                {resumeStats && <div className="mt-8 glass-effect p-8 rounded-3xl animate-pop text-left"><h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-2"><span className="text-green-400"><Icon name="Activity" /></span> Analysis Results</h3><div className="space-y-6">{Object.entries(resumeStats).filter(([k]) => k !== 'match').map(([key, val]) => (<div key={key}><div className="flex justify-between mb-2"><span className="uppercase font-bold text-xs tracking-wider text-slate-400">{key === 'ds' ? 'Data Science' : key}</span><span className="font-bold text-white">{val}%</span></div><div className="h-3 w-full bg-slate-800 rounded-full overflow-hidden"><div className={`h-full rounded-full transition-all duration-1000 ease-out ${val > 70 ? 'bg-green-500' : val > 50 ? 'bg-yellow-500' : 'bg-red-500'}`} style={{ width: `${val}%` }}></div></div></div>))}</div><div className="mt-8 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl text-blue-300 font-medium text-center">{resumeStats.match}</div></div>}
+            </div>
+        );
+
+        const LearnView = ({ courseData, markItemComplete, openDoc }) => (
+            <div className="animate-fade-in space-y-8 pb-20">
+                <div className="flex justify-between items-end">
+                    <div>
+                        <h2 className="text-3xl font-bold">Recommended Courses</h2>
+                        <p className="text-slate-400">Complete the 10 Modules per course to master the subject.</p>
+                    </div>
+                </div>
+                
+                <div className="grid grid-cols-1 gap-8">
+                    {courseData.map(course => {
+                        const videoScore = course.video.completed ? 1 : 0;
+                        const w3Score = course.w3.completed ? 1 : 0;
+                        const courseraScore = course.coursera.completed ? 1 : 0;
+                        const udemyScore = course.udemy.completed ? 1 : 0;
+                        const docsScore = course.docs.filter(d => d.completed).length;
+                        
+                        const completedModules = videoScore + w3Score + courseraScore + udemyScore + docsScore;
+                        const totalModules = 10;
+                        const progressPercent = Math.round((completedModules / totalModules) * 100);
+
+                        return (
+                        <div key={course.id} className="glass-effect rounded-3xl overflow-hidden border border-slate-700/50">
+                            <div className={`h-2 bg-gradient-to-r ${course.color}`}></div>
+                            <div className="p-8">
+                                <div className="flex justify-between items-start mb-6">
+                                    <div>
+                                        <h3 className="text-2xl font-bold text-white mb-2">{course.title}</h3>
+                                        <p className="text-slate-400">{course.desc}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-sm font-bold text-slate-300">{progressPercent}% Completed</span>
+                                        <div className="w-32 h-2 bg-slate-800 rounded-full mt-2 overflow-hidden">
+                                            <div className={`h-full bg-gradient-to-r ${course.color}`} style={{ width: `${progressPercent}%` }}></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                    {/* Left Side: Auto-Tick Video */}
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <h4 className="font-bold text-slate-300 flex items-center gap-2"><Icon name="PlayCircle" size={18}/> 1. Video Tutorial</h4>
+                                            <span className={`text-xs px-3 py-1.5 rounded flex items-center gap-2 font-bold ${course.video.completed ? 'bg-green-500/20 text-green-400' : 'bg-slate-800 text-slate-400'}`}>
+                                                <Icon name="Check" size={14} /> {course.video.completed ? 'Video Watched' : 'Pending Watch'}
+                                            </span>
+                                        </div>
+                                        <div className="aspect-video bg-black rounded-xl overflow-hidden shadow-lg border border-slate-700 relative">
+                                            {/* We use our custom YouTube player here. When it finishes, it calls onComplete */}
+                                            <YouTubePlayer 
+                                                videoId={course.video.url} 
+                                                isCompleted={course.video.completed} 
+                                                onComplete={() => markItemComplete(course.id, 'video')} 
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Right Side: Links & Real Docs */}
+                                    <div className="space-y-6">
+                                        
+                                        {/* Links Section (Items 2, 3, 4) */}
+                                        <div className="space-y-3">
+                                            <h4 className="font-bold text-slate-300 text-sm uppercase tracking-wider">External Platforms (2 to 4)</h4>
+                                            
+                                            <button onClick={() => { markItemComplete(course.id, 'w3'); window.open(course.w3.url, '_blank'); }} className="w-full flex items-center justify-between p-3 bg-slate-800/80 rounded-xl border border-slate-700 hover:border-green-500/50 hover:bg-slate-800 transition-all group">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-6 h-6 rounded flex items-center justify-center border transition-colors ${course.w3.completed ? 'bg-green-500 border-green-500 text-white' : 'border-slate-500 text-transparent'}`}><Icon name="Check" size={14}/></div>
+                                                    <span className="font-medium text-slate-200">2. Learn on W3Schools</span>
+                                                </div>
+                                                <Icon name="ExternalLink" size={16} className="text-slate-500 group-hover:text-green-400"/>
+                                            </button>
+
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <button onClick={() => { markItemComplete(course.id, 'coursera'); window.open(course.coursera.url, '_blank'); }} className="flex items-center justify-between p-3 bg-slate-800/80 rounded-xl border border-slate-700 hover:border-blue-500/50 hover:bg-slate-800 transition-all">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className={`w-5 h-5 rounded flex items-center justify-center border transition-colors ${course.coursera.completed ? 'bg-green-500 border-green-500 text-white' : 'border-slate-500 text-transparent'}`}><Icon name="Check" size={12}/></div>
+                                                        <span className="text-sm font-medium text-blue-300">3. Coursera</span>
+                                                    </div>
+                                                </button>
+                                                
+                                                <button onClick={() => { markItemComplete(course.id, 'udemy'); window.open(course.udemy.url, '_blank'); }} className="flex items-center justify-between p-3 bg-slate-800/80 rounded-xl border border-slate-700 hover:border-purple-500/50 hover:bg-slate-800 transition-all">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className={`w-5 h-5 rounded flex items-center justify-center border transition-colors ${course.udemy.completed ? 'bg-green-500 border-green-500 text-white' : 'border-slate-500 text-transparent'}`}><Icon name="Check" size={12}/></div>
+                                                        <span className="text-sm font-medium text-purple-300">4. Udemy</span>
+                                                    </div>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* Docs Section (Items 5 to 10) */}
+                                        <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800">
+                                            <h4 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-3">Course Documents (5 to 10)</h4>
+                                            <div className="space-y-2">
+                                                {course.docs.map((doc) => (
+                                                    <div key={doc.id} className="flex items-center gap-3 p-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors border border-slate-700">
+                                                        <button onClick={() => markItemComplete(course.id, 'doc', doc.id)} className={`w-6 h-6 rounded flex items-center justify-center transition-colors border ${doc.completed ? 'bg-green-500 border-green-500 text-white shadow-lg shadow-green-500/30' : 'bg-slate-900 border-slate-500 text-transparent'}`}>
+                                                            <Icon name="Check" size={14} />
+                                                        </button>
+                                                        <button onClick={() => { markItemComplete(course.id, 'doc', doc.id); openDoc(doc); }} className="flex-1 text-left text-sm text-slate-200 hover:text-white transition-colors">
+                                                            {doc.title}
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )})}
+                </div>
+            </div>
+        );
+
+        const ProgressView = ({ courseData }) => {
+            return (
+                <div className="max-w-6xl mx-auto animate-fade-in pb-20">
+                    <h2 className="text-3xl font-bold mb-8 flex items-center gap-3">
+                        <span className="p-2 bg-blue-500/20 rounded-lg text-blue-400"><Icon name="Activity" size={28}/></span>
+                        Course-by-Course Track Progress
+                    </h2>
+                    
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {courseData.map(c => {
+                            const courseCompleted = (c.video.completed ? 1 : 0) + (c.w3.completed ? 1 : 0) + (c.coursera.completed ? 1 : 0) + (c.udemy.completed ? 1 : 0) + c.docs.filter(d => d.completed).length;
+                            const courseTotal = 10;
+                            const percent = Math.round((courseCompleted / courseTotal) * 100);
+                            
+                            return (
+                                <div key={c.id} className="glass-effect p-8 rounded-3xl border border-slate-700 hover:border-slate-500 transition-colors relative overflow-hidden group">
+                                    <div className={`absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r ${c.color} opacity-70 group-hover:opacity-100 transition-opacity`}></div>
+                                    
+                                    <h3 className="text-2xl font-bold text-white mb-2">{c.title}</h3>
+                                    <p className="text-slate-400 mb-8 text-sm">{c.desc}</p>
+                                    
+                                    <div className="flex justify-between items-end mb-3">
+                                        <div className="text-4xl font-extrabold text-white">{percent}% <span className="text-sm text-slate-400 font-normal tracking-wide uppercase">Completed</span></div>
+                                        <span className={`text-xs px-4 py-1.5 rounded-full font-bold shadow-inner ${percent === 100 ? 'bg-green-500 text-white shadow-green-500/50' : 'bg-slate-800 text-slate-300 border border-slate-600'}`}>
+                                            {courseCompleted} / {courseTotal} Modules
+                                        </span>
+                                    </div>
+                                    
+                                    <div className="w-full bg-slate-900 h-4 rounded-full overflow-hidden border border-slate-800 shadow-inner">
+                                        <div className={`h-full transition-all duration-1000 ease-out bg-gradient-to-r ${c.color}`} style={{ width: `${percent}%` }}></div>
+                                    </div>
+                                    
+                                    <div className="mt-8 grid grid-cols-3 gap-4 pt-6 border-t border-slate-800">
+                                        <div className="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-800/50 border border-slate-700 text-center">
+                                            <Icon name="PlayCircle" size={20} className={`mb-2 ${c.video.completed ? 'text-green-400' : 'text-slate-500'}`}/>
+                                            <span className="text-xs font-bold text-slate-300 uppercase">Video</span>
+                                            <span className={`text-[10px] ${c.video.completed ? 'text-green-400' : 'text-slate-500'}`}>{c.video.completed ? 'Watched' : 'Pending'}</span>
+                                        </div>
+                                        <div className="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-800/50 border border-slate-700 text-center">
+                                            <Icon name="ExternalLink" size={20} className={`mb-2 ${(c.w3.completed && c.coursera.completed && c.udemy.completed) ? 'text-blue-400' : 'text-slate-500'}`}/>
+                                            <span className="text-xs font-bold text-slate-300 uppercase">Links</span>
+                                            <span className="text-[10px] text-slate-400">{(c.w3.completed?1:0)+(c.coursera.completed?1:0)+(c.udemy.completed?1:0)}/3 Visited</span>
+                                        </div>
+                                        <div className="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-800/50 border border-slate-700 text-center">
+                                            <Icon name="File" size={20} className={`mb-2 ${c.docs.filter(d => d.completed).length === 6 ? 'text-pink-400' : 'text-slate-500'}`}/>
+                                            <span className="text-xs font-bold text-slate-300 uppercase">Docs</span>
+                                            <span className="text-[10px] text-slate-400">{c.docs.filter(d => d.completed).length}/6 Read</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )
+                        })}
+                    </div>
+                </div>
+            );
+        };
+
+        const ChatView = ({ chatHistory, chatInput, setChatInput, handleSendChat, chatEndRef, isTyping }) => (
+            <div className="max-w-2xl mx-auto h-[80vh] flex flex-col glass-effect rounded-3xl overflow-hidden animate-pop border border-slate-700">
+                <div className="p-4 bg-slate-900 border-b border-slate-800 flex items-center gap-3"><div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white"><Icon name="Robot" /></div><div><h3 className="font-bold text-white">Advanced AI Tutor</h3><p className="text-xs text-green-400 flex items-center gap-1"><span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> Online</p></div></div>
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-950/50">{chatHistory.map((msg, i) => (<div key={i} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}><div className={`max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${msg.type === 'user' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-slate-800 text-slate-200 rounded-tl-none border border-slate-700 shadow-sm'}`}>{msg.text}</div></div>))}{isTyping && <div className="flex justify-start"><div className="bg-slate-800 p-3 rounded-2xl rounded-tl-none text-xs text-slate-400 animate-pulse">Thinking...</div></div>}<div ref={chatEndRef} /></div>
+                <div className="p-4 bg-slate-900 border-t border-slate-800 flex gap-2"><input type="text" className="flex-1 bg-slate-800 text-white border-none rounded-full px-5 py-3 focus:ring-2 focus:ring-blue-600 outline-none placeholder-slate-500" placeholder="Ask anything (e.g., 'What is AI?', 'Docker vs VM')..." value={chatInput} onChange={(e) => setChatInput(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleSendChat()} /><button onClick={handleSendChat} className="w-12 h-12 bg-blue-600 hover:bg-blue-500 rounded-full flex items-center justify-center transition-colors"><Icon name="Send" size={20} /></button></div>
+            </div>
+        );
+
+        const DocModal = ({ doc, onClose }) => (
+            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-pop">
+                <div className="bg-white text-slate-900 rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden relative shadow-2xl">
+                    <div className="p-4 border-b flex justify-between items-center bg-slate-100"><div><h3 className="font-bold text-lg">{doc.title}</h3><p className="text-xs text-slate-500">Reading Mode • Full Chapter</p></div><button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors"><Icon name="X" size={24} className="text-slate-600"/></button></div>
+                    <div className="flex-1 overflow-y-auto p-10 prose max-w-none bg-slate-50" dangerouslySetInnerHTML={{ __html: doc.content }}></div>
+                </div>
+            </div>
+        );
+
+        const DashboardHome = ({ setView, profile }) => (
+            <div className="animate-fade-in text-center py-10">
+                <h1 className="text-5xl font-extrabold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">Welcome, {profile.name || 'Achiever'}!</h1>
+                <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-12">Your all-in-one platform for AI, Cloud, and Web Development. Create your resume, learn from the best, and track your success.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto px-4">
+                    {[{ id: 'profile', label: 'Create Profile', gradient: 'from-blue-600 to-cyan-500', icon: 'User' },
+                      { id: 'resume', label: 'Analyze Resume', gradient: 'from-purple-600 to-pink-500', icon: 'Upload' },
+                      { id: 'learn', label: 'Start Learning', gradient: 'from-pink-500 to-rose-500', icon: 'BookOpen' },
+                      { id: 'chat', label: 'Ask AI Bot', gradient: 'from-green-500 to-emerald-400', icon: 'MessageSquare' }].map(item => (
+                        <button key={item.id} onClick={() => setView(item.id)} className={`group relative overflow-hidden rounded-3xl p-8 hover:-translate-y-2 transition-all duration-300 border border-slate-700/50 bg-gradient-to-br ${item.gradient} shadow-lg shadow-slate-900/50`}>
+                            <div className="absolute inset-0 bg-slate-900/40 group-hover:bg-transparent transition-colors duration-300"></div>
+                            <div className="relative z-10 flex flex-col items-center">
+                                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform shadow-inner">
+                                    <Icon name={item.icon} size={32} />
+                                </div>
+                                <h3 className="text-xl font-bold text-white drop-shadow-md">{item.label}</h3>
+                                <p className="text-xs text-white/80 mt-2 uppercase tracking-widest font-bold">Click to Open</p>
+                            </div>
+                        </button>
+                    ))}
+                </div>
+            </div>
+        );
+
+        // --- 5. MAIN APP COMPONENT ---
+        function App() {
+            const [isAuthenticated, setIsAuthenticated] = useState(false);
+            const [view, setView] = useState('dashboard');
+            const [profile, setProfile] = useState({ name: '', email: '', phone: '', address: '', college: '', degree: '', dept: '', year: '', cgpa: '', skills: '', projects: '', linkedin: '', photo: null });
+            const [isProfileSaved, setIsProfileSaved] = useState(false);
+            const [isAnalyzing, setIsAnalyzing] = useState(false);
+            const [resumeStats, setResumeStats] = useState(null);
+            const [courseData, setCourseData] = useState(LEARNING_DATA);
+            const [chatHistory, setChatHistory] = useState([
+                { type: 'bot', text: 'Hello! I am your Advanced AI Tutor. I can explain any technical concept. Try asking "What is Neural Network?", "What is React?", or "Explain Data Science".' }
+            ]);
+            const [chatInput, setChatInput] = useState('');
+            const [isTyping, setIsTyping] = useState(false);
+            const [activeDoc, setActiveDoc] = useState(null);
+            const chatEndRef = useRef(null);
+
+            useEffect(() => {
+                const user = JSON.parse(localStorage.getItem('smartLearnUser'));
+                const savedProfile = JSON.parse(localStorage.getItem('userProfile'));
+                
+                if (savedProfile) { 
+                    setProfile(savedProfile); 
+                    setIsProfileSaved(true); 
+                }
+            }, []);
+
+            useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [chatHistory, isTyping]);
+
+            const handleLoginSuccess = (user) => { setIsAuthenticated(true); };
+            const handleLogout = () => { setIsAuthenticated(false); setView('dashboard'); };
+            
+            const handleProfileSave = (e) => { 
+                e.preventDefault(); 
+                localStorage.setItem('userProfile', JSON.stringify(profile)); 
+                setIsProfileSaved(true); 
+                alert("Profile Saved! Scroll down to see your generated resume."); 
+            };
+            
+            const handleNewProfile = () => { 
+                if(confirm("Create new profile? Current unsaved data will be lost.")) { 
+                    setProfile({ name: '', email: '', phone: '', address: '', college: '', degree: '', dept: '', year: '', cgpa: '', skills: '', projects: '', linkedin: '', photo: null }); 
+                    setIsProfileSaved(false); 
+                } 
+            };
+            
+            const handlePhotoUpload = (e) => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onloadend = () => setProfile(prev => ({...prev, photo: reader.result})); reader.readAsDataURL(file); } };
+            
+            // DYNAMIC RESUME ANALYSIS
+            const handleResumeUpload = (e) => { 
+                const file = e.target.files[0];
+                if (file) { 
+                    setIsAnalyzing(true); 
+                    setResumeStats(null); 
+                    
+                    // Simulate analysis time
+                    setTimeout(() => { 
+                        setIsAnalyzing(false); 
+                        
+                        // Generate random realistic scores based on upload
+                        const aiScore = Math.floor(Math.random() * 55) + 40;     // 40 to 95
+                        const cloudScore = Math.floor(Math.random() * 55) + 40;  // 40 to 95
+                        const webScore = Math.floor(Math.random() * 55) + 40;    // 40 to 95
+                        const dsScore = Math.floor(Math.random() * 55) + 40;     // 40 to 95
+                        
+                        // Find highest score to determine the best match
+                        const scores = { 
+                            'AI Engineer': aiScore, 
+                            'Cloud Architect': cloudScore, 
+                            'Full Stack Developer': webScore, 
+                            'Data Scientist': dsScore 
+                        };
+                        const bestMatchRole = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
+                        
+                        setResumeStats({ 
+                            ai: aiScore, 
+                            cloud: cloudScore, 
+                            web: webScore, 
+                            ds: dsScore, 
+                            match: `Based on your resume, you are an Excellent Match for: ${bestMatchRole}.` 
+                        }); 
+                    }, 2500); 
+                } 
+            };
+            
+            const markItemComplete = (courseId, itemType, docId = null) => {
+                setCourseData(prev => prev.map(c => {
+                    if (c.id === courseId) {
+                        if (itemType === 'doc') {
+                            return { ...c, docs: c.docs.map(d => d.id === docId ? { ...d, completed: true } : d) };
+                        } else {
+                            return { ...c, [itemType]: { ...c[itemType], completed: true } };
+                        }
+                    }
+                    return c;
+                }));
+            };
+
+            // EDITED: New Chat Logic to properly handle questions from dataset
+            const findAnswer = (input) => {
+                const cleanInput = input.toLowerCase().trim();
+                const stopWords = ['what', 'is', 'a', 'an', 'the', 'are', 'in', 'of', 'to', 'for', 'and', 'how', 'do', 'we'];
+                const inputTokens = cleanInput.replace(/[^\w\s]/gi, '').split(/\s+/).filter(w => !stopWords.includes(w) && w.length > 0);
+                
+                let bestMatch = null; 
+                let highestScore = 0;
+                
+                CHAT_DATASET.forEach(item => { 
+                    let score = 0; 
+                    const qClean = item.q.toLowerCase().replace(/[^\w\s]/gi, '');
+                    const qTokens = qClean.split(/\s+/);
+                    
+                    // Exact match gives the highest score
+                    if (qClean === cleanInput.replace(/[^\w\s]/gi, '')) {
+                        score += 100;
+                    } else if (qClean.includes(cleanInput.replace(/[^\w\s]/gi, ''))) {
+                        score += 50;
+                    }
+                    
+                    // Token match logic
+                    inputTokens.forEach(token => {
+                        if (qTokens.includes(token)) score += 10;
+                    });
+                    
+                    if (score > highestScore) { 
+                        highestScore = score; 
+                        bestMatch = item.a; 
+                    }
+                });
+                
+                if (bestMatch && highestScore >= 10) return bestMatch;
+                if (cleanInput.match(/(hi|hello|hey|vanakkam)/)) return "Hello! Ask me any technical question like 'What is Artificial Intelligence?' or 'What is React?'.";
+                return "I'm trained on technical topics (AI, Cloud, Web Dev, Data Science). Try asking specific questions like 'What is supervised learning?' or 'What is an API endpoint?'.";
+            };
+
+            const handleSendChat = () => {
+                if (!chatInput.trim()) return;
+                const userMsg = chatInput;
+                setChatHistory(prev => [...prev, { type: 'user', text: userMsg }]);
+                setChatInput('');
+                setIsTyping(true);
+                setTimeout(() => {
+                    const answer = findAnswer(userMsg);
+                    setIsTyping(false);
+                    setChatHistory(prev => [...prev, { type: 'bot', text: answer }]);
+                }, 800);
+            };
+
+            if (!isAuthenticated) return <AuthView onLoginSuccess={handleLoginSuccess} />;
+
+            return (
+                <div className="flex h-screen overflow-hidden bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#020617] to-[#020617]">
+                    <Sidebar view={view} setView={setView} profile={profile} onLogout={handleLogout} />
+                    <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
+                        <header className="h-20 border-b border-slate-800 flex items-center justify-between px-8 bg-slate-900/50 backdrop-blur-md z-10 no-print">
+                            <h2 className="text-xl font-bold text-white capitalize">{view === 'dashboard' ? 'Overview' : view.replace('-', ' ')}</h2>
+                            <button className="p-2 text-slate-400 hover:text-white"><Icon name="User" /></button>
+                        </header>
+                        <div className="flex-1 overflow-y-auto p-8 relative">
+                            {view === 'dashboard' && <DashboardHome setView={setView} profile={profile} />}
+                            {view === 'profile' && <ProfileView profile={profile} setProfile={setProfile} handleProfileSave={handleProfileSave} isProfileSaved={isProfileSaved} handlePhotoUpload={handlePhotoUpload} handleNewProfile={handleNewProfile} />}
+                            {view === 'resume' && <ResumeView handleResumeUpload={handleResumeUpload} isAnalyzing={isAnalyzing} resumeStats={resumeStats} />}
+                            {view === 'learn' && <LearnView courseData={courseData} markItemComplete={markItemComplete} openDoc={setActiveDoc} />}
+                            {view === 'progress' && <ProgressView courseData={courseData} />}
+                            {view === 'chat' && <ChatView chatHistory={chatHistory} chatInput={chatInput} setChatInput={setChatInput} handleSendChat={handleSendChat} chatEndRef={chatEndRef} isTyping={isTyping} />}
+                        </div>
+                        {activeDoc && <DocModal doc={activeDoc} onClose={() => setActiveDoc(null)} />}
+                    </main>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
